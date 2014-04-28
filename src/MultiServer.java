@@ -1,3 +1,4 @@
+import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -6,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -25,7 +27,7 @@ public class MultiServer {
 	private static final int maxClientsCount = 3;
 	// tablica z watkami wszystkich klientow
 	private static final ClientThread[] threads = new ClientThread[maxClientsCount];
-	
+
 	private static String[] titles = { "test.txt", "test1.txt", "test2.txt" };
 
 	public static void main(String args[]) {
@@ -57,8 +59,8 @@ public class MultiServer {
 					if (threads[i] == null) {
 						// wyszukuje pierwszego wolnego miejsca w tablicy i
 						// tworze watek klienta
-						(threads[i] = new ClientThread(clientSocket, threads, i, titles))
-								.start();
+						(threads[i] = new ClientThread(clientSocket, threads,
+								i, titles)).start();
 						break;
 					}
 				}
@@ -78,6 +80,20 @@ public class MultiServer {
 			}
 		}
 	}
+
+	public void send(OutputStream os, String name) throws IOException {
+		// sendfile
+		String pathFile = " d:\\eclipse\\semestr4\\MulticlientServer\\" + name;
+		File myFile = new File(pathFile);
+		byte[] mybytearray = new byte[(int) myFile.length() + 1];
+		FileInputStream fis = new FileInputStream(myFile);
+		BufferedInputStream bis = new BufferedInputStream(fis);
+		bis.read(mybytearray, 0, mybytearray.length);
+		System.out.println("Sending...");
+		os.write(mybytearray, 0, mybytearray.length);
+		os.flush();
+	}
+
 }
 
 /**
@@ -103,7 +119,7 @@ class ClientThread extends Thread {
 		this.threads = threads;
 		maxClientsCount = threads.length;
 		this.klientNr = klientNr;
-		this.titles=titles;
+		this.titles = titles;
 	}
 
 	@Override
@@ -117,25 +133,29 @@ class ClientThread extends Thread {
 			for (int i = 0; i < titles.length; i++) {
 				os.println(titles[i]);
 			}
-			while (true) {
-			//os.println("Podaj plik i sciezke wyjsciowa.");
+			os.println("Podaj plik i sciezke wyjsciowa.");
 
-		
-				String title = is.readLine().trim();
-				String path = is.readLine().trim();
-				//wysylam plik 
-				sendFile(title, path);
+			String title = is.readLine().trim();
+			String path = is.readLine().trim();
+			while (true) {
+
+				// wysylam plik
+				// sendFile(title, path);
+				OutputStream os = clientSocket.getOutputStream();
+				send(os, title);
 				// dzialam az ktos nie poda /quit
 				if (title.startsWith("/quit") || path.startsWith("/guit")) {
 					break;
 				}
 
-				os.println(title);
-				os.println(path);
+				((PrintStream) os).println(title);
+				((PrintStream) os).println(path);
+				title = is.readLine().trim();
+				path = is.readLine().trim();
 
 			}
 			// jesli wyszedlem z petli to znaczy ze skonczylem, wysylam ta
-			// inforamcje 
+			// inforamcje
 
 			os.println("*** Bye ***");
 
@@ -155,31 +175,46 @@ class ClientThread extends Thread {
 		} catch (IOException e) {
 		}
 	}
-
-	private void sendFile(String name, String pathOut) throws IOException {
-		synchronized (this) {
-		objInStr = new ObjectInputStream(clientSocket.getInputStream());
-		objOutStr = new ObjectOutputStream(clientSocket.getOutputStream());
-	//	String fileForClient = "d:\\eclipse\\semestr4\\MulticlientServer\\client"+ this.klientNr+ name;
-		File outFile = new File(pathOut);
-		String pathFile = "d:\\eclipse\\semestr4\\MulticlientServer\\" + name;
-		File file = new File (pathFile); 
-		
-		objOutStr.writeObject( outFile);  
-		  
-        FileInputStream fis = new FileInputStream(file);  
-        byte [] buffer = new byte[MultiClient.BUFFER_SIZE];  
-        Integer bytesRead = 0;  
-  
-        while ((bytesRead = fis.read(buffer)) > 0) {  
-        	objOutStr.writeObject(bytesRead);  
-        	objOutStr.writeObject(Arrays.copyOf(buffer, buffer.length));  
-        }  
-  
-        objOutStr.close();  
-        objInStr.close();  
-		}
+	public void send(OutputStream os, String name) throws IOException {
+		// sendfile
+		String pathFile = " d:\\eclipse\\semestr4\\MulticlientServer\\" + name;
+		File myFile = new File(pathFile);
+		byte[] mybytearray = new byte[(int) myFile.length() + 1];
+		FileInputStream fis = new FileInputStream(myFile);
+		BufferedInputStream bis = new BufferedInputStream(fis);
+		bis.read(mybytearray, 0, mybytearray.length);
+		System.out.println("Sending...");
+		os.write(mybytearray, 0, mybytearray.length);
+		os.flush();
 	}
+
+//	private void sendFile(String name, String pathOut) throws IOException {
+//		synchronized (this) {
+//			objInStr = new ObjectInputStream(clientSocket.getInputStream());
+//			objOutStr = new ObjectOutputStream(clientSocket.getOutputStream());
+//			// String fileForClient =
+//			// "d:\\eclipse\\semestr4\\MulticlientServer\\client"+
+//			// this.klientNr+ name;
+//			File outFile = new File(pathOut);
+//			String pathFile = "d:\\eclipse\\semestr4\\MulticlientServer\\"
+//					+ name;
+//			File file = new File(pathFile);
+//
+//			objOutStr.writeObject(outFile);
+//
+//			FileInputStream fis = new FileInputStream(file);
+//			byte[] buffer = new byte[MultiClient.BUFFER_SIZE];
+//			Integer bytesRead = 0;
+//
+//			while ((bytesRead = fis.read(buffer)) > 0) {
+//				objOutStr.writeObject(bytesRead);
+//				objOutStr.writeObject(Arrays.copyOf(buffer, buffer.length));
+//			}
+//
+//			objOutStr.close();
+//			objInStr.close();
+//		}
+//	}
 
 	private void posprzatajPolaczenie() {
 		synchronized (this) {
@@ -191,13 +226,13 @@ class ClientThread extends Thread {
 		}
 	}
 
-//	private void powiadomOdpowiedniegoKlieta(String wiadomosc) {
-//		synchronized (this) {
-//			for (int i = 0; i < maxClientsCount; i++) {
-//				if (threads[i] != null && threads[i] != this) {
-//					threads[i].os.println(wiadomosc);
-//				}
-//			}
-//		}
-//	}
+	// private void powiadomOdpowiedniegoKlieta(String wiadomosc) {
+	// synchronized (this) {
+	// for (int i = 0; i < maxClientsCount; i++) {
+	// if (threads[i] != null && threads[i] != this) {
+	// threads[i].os.println(wiadomosc);
+	// }
+	// }
+	// }
+	// }
 }

@@ -27,7 +27,7 @@ public class MultiClient implements Runnable {
 	private static boolean closed = false;
 
 	// String pathout=
-	// "d:\eclipse\semestr4\MulticlientServer\downloadedFile.txt"
+	// "D:\eclipse\semestr4\MulticlientServer\downloadedFile.txt"
 	public static void main(String[] args) {
 
 		// The default port.

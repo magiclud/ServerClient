@@ -77,7 +77,7 @@ public class MultiClient implements Runnable {
 				String fileName = inputLine.readLine().trim();
 				String fileEnd = inputLine.readLine().trim();
 
-				while (!closed) {
+			//	while (!closed) {
 					// String fileName = inputLine.readLine().trim();
 					// String filePath = inputLine.readLine().trim();
 					// // os.println("wiadomosc do serwera");
@@ -87,12 +87,10 @@ public class MultiClient implements Runnable {
 					// saveFile();
 
 					new MultiClient().receiveFile(fileEnd);
-					fileName = inputLine.readLine().trim();
 					System.out.println(fileName);
-					fileEnd = inputLine.readLine().trim();
 					System.out.println(fileEnd);
 
-				}
+			//	}
 				/*
 				 * Close the output stream, close the input stream, close the
 				 * socket.

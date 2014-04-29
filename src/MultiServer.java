@@ -139,7 +139,7 @@ class ClientThread extends Thread {
 
 			while (true) {
 				String title = is.readLine().trim();
-				System.out.print(title);
+				System.out.println(title);
 				String path = is.readLine().trim();
 				// dzialam az ktos nie poda /quit
 				if (title.startsWith("/quit") || path.startsWith("/guit")) {
@@ -149,10 +149,9 @@ class ClientThread extends Thread {
 				// sendFile(title, path);
 				OutputStream ost = clientSocket.getOutputStream();
 				send(ost, title);
-				
-
-				os.println(title);
-				os.println(path);
+				System.out.println("Wyslano poprwnie plik "+ title+", obraz znajduje sie "+ path);
+			//	os.println(title);
+			//	os.println(path);
 				// title = is.readLine().trim();
 				// path = is.readLine().trim();
 
@@ -184,7 +183,7 @@ class ClientThread extends Thread {
 		// sendfile
 		String pathFile = "D:\\eclipse\\semestr4\\MulticlientServer\\" + name;
 		File myFile = new File(pathFile);
-		byte[] mybytearray = new byte[(int) myFile.length() + 1];
+		byte[] mybytearray = new byte[(int) myFile.length() ];
 		System.out.println("przed");
 		FileInputStream fis = new FileInputStream(myFile);
 		System.out.println("po");
@@ -193,6 +192,7 @@ class ClientThread extends Thread {
 		System.out.println("Sending...");
 		os.write(mybytearray, 0, mybytearray.length);
 		os.flush();
+		os.close();
 	}
 
 	// private void sendFile(String name, String pathOut) throws IOException {

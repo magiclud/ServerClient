@@ -1,5 +1,6 @@
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -75,22 +76,21 @@ public class MultiClient implements Runnable {
 				new Thread(new MultiClient()).start();
 				String fileName = inputLine.readLine().trim();
 				String filePath = inputLine.readLine().trim();
-			
+
 				while (!closed) {
-//					String fileName = inputLine.readLine().trim();
-//					String filePath = inputLine.readLine().trim();
-//					// os.println("wiadomosc do serwera");
+					// String fileName = inputLine.readLine().trim();
+					// String filePath = inputLine.readLine().trim();
+					// // os.println("wiadomosc do serwera");
 
 					os.println(fileName);
 					os.println(filePath);
-					//saveFile();
-					InputStream objInStr = 
-							clientSocket.getInputStream();
-					
-					 new MultiClient().receiveFile(objInStr, filePath);
-					 OutputStream os = clientSocket.getOutputStream();
+					// saveFile();
+
+					new MultiClient().receiveFile(filePath);
 					fileName = inputLine.readLine().trim();
+					System.out.println(fileName);
 					filePath = inputLine.readLine().trim();
+					System.out.println(filePath);
 
 				}
 				/*
@@ -106,81 +106,95 @@ public class MultiClient implements Runnable {
 		}
 	}
 
-	private static void saveFile() throws Exception {
-		// ObjectOutputStream objOutStr = new
-		// ObjectOutputStream(clientSocket.getOutputStream());
+	// private static void saveFile() throws Exception {
+	// // ObjectOutputStream objOutStr = new
+	// // ObjectOutputStream(clientSocket.getOutputStream());
+	//
+	// ObjectInputStream objInStr =
+	// (ObjectInputStream) clientSocket.getInputStream();
+	//
+	//
+	// FileOutputStream fileOutStr = null;
+	// byte[] buffer = new byte[BUFFER_SIZE];
+	//
+	// // 1. Read file name.
+	// Object obj = objInStr.readObject();
+	//
+	// if (obj instanceof String) {
+	// fileOutStr = new FileOutputStream(obj.toString());
+	// } else {
+	// throwException("Something is wrong");
+	// }
+	//
+	// // 2. Read file to the end.
+	// Integer bytesRead = 0;
+	//
+	// do {
+	// obj = objInStr.readObject();
+	//
+	// if (!(obj instanceof Integer)) {
+	// throwException("Something is wrong");
+	// }
+	//
+	// bytesRead = (Integer) obj;
+	//
+	// obj = objInStr.readObject();
+	//
+	// if (!(obj instanceof byte[])) {
+	// throwException("Something is wrong");
+	// }
+	//
+	// buffer = (byte[]) obj;
+	//
+	// // 3. Write data to output file.
+	// fileOutStr.write(buffer, 0, bytesRead);
+	//
+	// } while (bytesRead == BUFFER_SIZE);
+	//
+	// System.out.println("File transfer success");
+	//
+	// fileOutStr.close();
+	//
+	// objInStr.close();
+	// // objOutStr.close();
+	// }
 
-		ObjectInputStream objInStr = 
-				(ObjectInputStream) clientSocket.getInputStream();
-		
+	private void receiveFile(String path) throws IOException {
 
-		FileOutputStream fileOutStr = null;
-		byte[] buffer = new byte[BUFFER_SIZE];
+		// byte[] theByte = new byte[1];
+		byte[] byteArray = new byte[1024];
+		InputStream inputStream = clientSocket.getInputStream();
+		ByteArrayOutputStream arrayOutput = new ByteArrayOutputStream();
 
-		// 1. Read file name.
-		Object obj = objInStr.readObject();
+		if (inputStream != null) {
 
-		if (obj instanceof String) {
-			fileOutStr = new FileOutputStream(obj.toString());
-		} else {
-			throwException("Something is wrong");
+			FileOutputStream fileOutput = null;
+			BufferedOutputStream bufferedOutput = null;
+			try {
+				System.out.println("downloading target file..."  + path);
+				fileOutput = new FileOutputStream( path);
+				bufferedOutput = new BufferedOutputStream(fileOutput);
+				System.out.println("buffer: "+bufferedOutput);
+
+				int processedByte = inputStream.read(byteArray, 0,
+						byteArray.length);
+				System.out.println("processedByte: "+processedByte);
+
+				do {
+					arrayOutput.write(byteArray);
+					processedByte = inputStream.read(byteArray);
+				} while (processedByte != -1);
+
+				bufferedOutput.write(arrayOutput.toByteArray());
+				bufferedOutput.flush();
+				bufferedOutput.close();
+				System.out.println("file downloaded");
+
+			} catch (IOException ex) {
+				System.out.println("file transfer error." + ex);
+			}
 		}
 
-		// 2. Read file to the end.
-		Integer bytesRead = 0;
-
-		do {
-			obj = objInStr.readObject();
-
-			if (!(obj instanceof Integer)) {
-				throwException("Something is wrong");
-			}
-
-			bytesRead = (Integer) obj;
-
-			obj = objInStr.readObject();
-
-			if (!(obj instanceof byte[])) {
-				throwException("Something is wrong");
-			}
-
-			buffer = (byte[]) obj;
-
-			// 3. Write data to output file.
-			fileOutStr.write(buffer, 0, bytesRead);
-
-		} while (bytesRead == BUFFER_SIZE);
-
-		System.out.println("File transfer success");
-
-		fileOutStr.close();
-
-		objInStr.close();
-		// objOutStr.close();
-	}
-
-	private void receiveFile(	InputStream is2, String path) throws IOException {
-		 int filesize = 6022386;
-	        int bytesRead;
-	        int current = 0;
-	        byte[] mybytearray = new byte[filesize];
-
-	        FileOutputStream fos = new FileOutputStream(path);
-	        BufferedOutputStream bos = new BufferedOutputStream(fos);
-	        bytesRead = is.read(mybytearray, 0, mybytearray.length);
-	        current = bytesRead;
-
-	        do {
-	            bytesRead = is.read(mybytearray, current,
-	                    (mybytearray.length - current));
-	            if (bytesRead >= 0)
-	                current += bytesRead;
-	        } while (bytesRead > -1);
-
-	        bos.write(mybytearray, 0, current);
-	        bos.flush();
-	        bos.close();
-		
 	}
 
 	public static void throwException(String message) throws Exception {

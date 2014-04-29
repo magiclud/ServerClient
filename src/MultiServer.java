@@ -81,20 +81,6 @@ public class MultiServer {
 		}
 	}
 
-	// public void send(OutputStream os, String name) throws IOException {
-	// // sendfile
-	// String pathFile = "D:\\eclipse\\semestr4\\MulticlientServer\\" + name;
-	// System.out.println(pathFile);
-	// File myFile = new File(pathFile);
-	// byte[] mybytearray = new byte[(int) myFile.length() + 1];
-	// FileInputStream fis = new FileInputStream(myFile);
-	// BufferedInputStream bis = new BufferedInputStream(fis);
-	// bis.read(mybytearray, 0, mybytearray.length);
-	// System.out.println("Sending...");
-	// os.write(mybytearray, 0, mybytearray.length);
-	// os.flush();
-	// }
-
 }
 
 /**
@@ -145,15 +131,10 @@ class ClientThread extends Thread {
 				if (title.startsWith("/quit") || path.startsWith("/guit")) {
 					break;
 				}
-				// wysylam plik
-				// sendFile(title, path);
+
 				OutputStream ost = clientSocket.getOutputStream();
 				send(ost, title);
 				System.out.println("Wyslano poprwnie plik "+ title+", obraz znajduje sie "+ path);
-			//	os.println(title);
-			//	os.println(path);
-				// title = is.readLine().trim();
-				// path = is.readLine().trim();
 
 			}
 			// jesli wyszedlem z petli to znaczy ze skonczylem, wysylam ta
@@ -195,33 +176,6 @@ class ClientThread extends Thread {
 		os.close();
 	}
 
-	// private void sendFile(String name, String pathOut) throws IOException {
-	// synchronized (this) {
-	// objInStr = new ObjectInputStream(clientSocket.getInputStream());
-	// objOutStr = new ObjectOutputStream(clientSocket.getOutputStream());
-	// // String fileForClient =
-	// // "d:\\eclipse\\semestr4\\MulticlientServer\\client"+
-	// // this.klientNr+ name;
-	// File outFile = new File(pathOut);
-	// String pathFile = "d:\\eclipse\\semestr4\\MulticlientServer\\"
-	// + name;
-	// File file = new File(pathFile);
-	//
-	// objOutStr.writeObject(outFile);
-	//
-	// FileInputStream fis = new FileInputStream(file);
-	// byte[] buffer = new byte[MultiClient.BUFFER_SIZE];
-	// Integer bytesRead = 0;
-	//
-	// while ((bytesRead = fis.read(buffer)) > 0) {
-	// objOutStr.writeObject(bytesRead);
-	// objOutStr.writeObject(Arrays.copyOf(buffer, buffer.length));
-	// }
-	//
-	// objOutStr.close();
-	// objInStr.close();
-	// }
-	// }
 
 	private void posprzatajPolaczenie() {
 		synchronized (this) {
@@ -232,14 +186,4 @@ class ClientThread extends Thread {
 			}
 		}
 	}
-
-	// private void powiadomOdpowiedniegoKlieta(String wiadomosc) {
-	// synchronized (this) {
-	// for (int i = 0; i < maxClientsCount; i++) {
-	// if (threads[i] != null && threads[i] != this) {
-	// threads[i].os.println(wiadomosc);
-	// }
-	// }
-	// }
-	// }
 }

@@ -22,13 +22,13 @@ public class MultiClient implements Runnable {
 	// The output stream
 	private static PrintStream os = null;
 	// The input stream
-	private static DataInputStream is = null;
+	private static DataInputStream inputStreamData = null;
 
 	private static BufferedReader inputLine = null;
 	private static boolean closed = false;
 
-	// String pathout=
-	// "D:\eclipse\semestr4\MulticlientServer\downloadedFile.txt"
+	private static String pathout=  "D:\\eclipse\\semestr4\\MulticlientServer\\";
+	
 	public static void main(String[] args) {
 
 		// The default port.
@@ -56,7 +56,7 @@ public class MultiClient implements Runnable {
 			clientSocket = new Socket(host, portNumber);
 			inputLine = new BufferedReader(new InputStreamReader(System.in));
 			os = new PrintStream(clientSocket.getOutputStream());
-			is = new DataInputStream(clientSocket.getInputStream());
+			inputStreamData = new DataInputStream(clientSocket.getInputStream());
 		} catch (UnknownHostException e) {
 			System.err.println("Don't know about host " + host);
 		} catch (IOException e) {
@@ -69,13 +69,13 @@ public class MultiClient implements Runnable {
 		 * If everything has been initialized then we want to write some data to
 		 * the socket we have opened a connection to on the port portNumber.
 		 */
-		if (clientSocket != null && os != null && is != null) {
+		if (clientSocket != null && os != null && inputStreamData != null) {
 			try {
 
 				/* Create a thread to read from the server. */
 				new Thread(new MultiClient()).start();
 				String fileName = inputLine.readLine().trim();
-				String filePath = inputLine.readLine().trim();
+				String fileEnd = inputLine.readLine().trim();
 
 				while (!closed) {
 					// String fileName = inputLine.readLine().trim();
@@ -83,14 +83,14 @@ public class MultiClient implements Runnable {
 					// // os.println("wiadomosc do serwera");
 
 					os.println(fileName);
-					os.println(filePath);
+					os.println(pathout + fileEnd);
 					// saveFile();
 
-					new MultiClient().receiveFile(filePath);
+					new MultiClient().receiveFile(fileEnd);
 					fileName = inputLine.readLine().trim();
 					System.out.println(fileName);
-					filePath = inputLine.readLine().trim();
-					System.out.println(filePath);
+					fileEnd = inputLine.readLine().trim();
+					System.out.println(fileEnd);
 
 				}
 				/*
@@ -98,7 +98,7 @@ public class MultiClient implements Runnable {
 				 * socket.
 				 */
 				os.close();
-				is.close();
+				inputStreamData.close();
 				clientSocket.close();
 			} catch (Exception e) {
 				System.err.println("IOException: " + e);
@@ -106,67 +106,13 @@ public class MultiClient implements Runnable {
 		}
 	}
 
-	// private static void saveFile() throws Exception {
-	// // ObjectOutputStream objOutStr = new
-	// // ObjectOutputStream(clientSocket.getOutputStream());
-	//
-	// ObjectInputStream objInStr =
-	// (ObjectInputStream) clientSocket.getInputStream();
-	//
-	//
-	// FileOutputStream fileOutStr = null;
-	// byte[] buffer = new byte[BUFFER_SIZE];
-	//
-	// // 1. Read file name.
-	// Object obj = objInStr.readObject();
-	//
-	// if (obj instanceof String) {
-	// fileOutStr = new FileOutputStream(obj.toString());
-	// } else {
-	// throwException("Something is wrong");
-	// }
-	//
-	// // 2. Read file to the end.
-	// Integer bytesRead = 0;
-	//
-	// do {
-	// obj = objInStr.readObject();
-	//
-	// if (!(obj instanceof Integer)) {
-	// throwException("Something is wrong");
-	// }
-	//
-	// bytesRead = (Integer) obj;
-	//
-	// obj = objInStr.readObject();
-	//
-	// if (!(obj instanceof byte[])) {
-	// throwException("Something is wrong");
-	// }
-	//
-	// buffer = (byte[]) obj;
-	//
-	// // 3. Write data to output file.
-	// fileOutStr.write(buffer, 0, bytesRead);
-	//
-	// } while (bytesRead == BUFFER_SIZE);
-	//
-	// System.out.println("File transfer success");
-	//
-	// fileOutStr.close();
-	//
-	// objInStr.close();
-	// // objOutStr.close();
-	// }
-
 	private void receiveFile(String path) throws IOException {
 
 		// byte[] theByte = new byte[1];
 		byte[] byteArray = new byte[1024];
-		InputStream inputStream = clientSocket.getInputStream();
 		ByteArrayOutputStream arrayOutput = new ByteArrayOutputStream();
 
-		if (inputStream != null) {
+		if (inputStreamData != null) {
 
 			FileOutputStream fileOutput = null;
 			BufferedOutputStream bufferedOutput = null;
@@ -176,13 +122,13 @@ public class MultiClient implements Runnable {
 				bufferedOutput = new BufferedOutputStream(fileOutput);
 				System.out.println("buffer: "+bufferedOutput);
 
-				int processedByte = inputStream.read(byteArray, 0,
+				int processedByte = inputStreamData.read(byteArray, 0,
 						byteArray.length);
 				System.out.println("processedByte: "+processedByte);
 
 				do {
 					arrayOutput.write(byteArray);
-					processedByte = inputStream.read(byteArray);
+					processedByte = inputStreamData.read(byteArray);
 				} while (processedByte != -1);
 
 				bufferedOutput.write(arrayOutput.toByteArray());
@@ -214,7 +160,7 @@ public class MultiClient implements Runnable {
 		 */
 		String responseLine;
 		try {
-			while ((responseLine = is.readLine()) != null) {
+			while ((responseLine = inputStreamData.readLine()) != null) {
 				System.out.println(responseLine);
 				if (responseLine.indexOf("*** Bye") != -1)
 					break;

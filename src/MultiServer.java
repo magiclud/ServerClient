@@ -122,8 +122,8 @@ class ClientThread extends Thread {
 				os.println(titles[i]);
 			}
 			os.println("Podaj plik i sciezke wyjsciowa.");
-
 			while (true) {
+
 				String title = is.readLine().trim();
 				System.out.println(title);
 				String path = is.readLine().trim();
@@ -131,16 +131,17 @@ class ClientThread extends Thread {
 				if (title.startsWith("/quit") || path.startsWith("/guit")) {
 					break;
 				}
-
 				OutputStream ost = clientSocket.getOutputStream();
+				System.out.println("Przed wyslaniem pliku do klienta");
 				send(ost, title);
-				System.out.println("Wyslano poprwnie plik "+ title+", obraz znajduje sie "+ path);
+				System.out.println("Wyslano poprwnie plik " + title
+						+ ", obraz znajduje sie " + path);
 
 			}
 			// jesli wyszedlem z petli to znaczy ze skonczylem, wysylam ta
 			// inforamcje
 
-			os.println("*** Bye ***");
+			os.println("#*** Bye ***");
 
 			/*
 			 * Clean up. Set the current thread variable to null so that a new
@@ -164,7 +165,7 @@ class ClientThread extends Thread {
 		// sendfile
 		String pathFile = "D:\\eclipse\\semestr4\\MulticlientServer\\" + name;
 		File myFile = new File(pathFile);
-		byte[] mybytearray = new byte[(int) myFile.length() ];
+		byte[] mybytearray = new byte[(int) myFile.length()];
 		System.out.println("przed");
 		FileInputStream fis = new FileInputStream(myFile);
 		System.out.println("po");
@@ -173,9 +174,8 @@ class ClientThread extends Thread {
 		System.out.println("Sending...");
 		os.write(mybytearray, 0, mybytearray.length);
 		os.flush();
-		os.close();
+		os.close();//musze to zamnknac bbo inczaczej nie ma danych w nowym pliku s
 	}
-
 
 	private void posprzatajPolaczenie() {
 		synchronized (this) {

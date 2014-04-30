@@ -84,18 +84,17 @@ public class MultiClient implements Runnable {
 
 					os.println(fileName);
 					os.println(pathout + fileEnd);
-					// saveFile();
-
+System.out.println("Przed pobraniem pliku od klienta");
 					new MultiClient().receiveFile(fileEnd);
-					System.out.println(fileName);
-					System.out.println(fileEnd);
-
+				
+					System.out.println("Po pobraniu pliku od klienta");
 			//	}
 				/*
 				 * Close the output stream, close the input stream, close the
 				 * socket.
 				 */
 				os.close();
+				System.out.println("Strumienie zamykam");
 				inputStreamData.close();
 				clientSocket.close();
 			} catch (Exception e) {
@@ -131,6 +130,7 @@ public class MultiClient implements Runnable {
 
 				bufferedOutput.write(arrayOutput.toByteArray());
 				bufferedOutput.flush();
+				System.out.println("Przed zamknieciem strumienia buffer out put");
 				bufferedOutput.close();
 				System.out.println("file downloaded");
 

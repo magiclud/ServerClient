@@ -77,11 +77,6 @@ public class MultiClient implements Runnable {
 				String fileName = inputLine.readLine().trim();
 				String fileEnd = inputLine.readLine().trim();
 
-			//	while (!closed) {
-					// String fileName = inputLine.readLine().trim();
-					// String filePath = inputLine.readLine().trim();
-					// // os.println("wiadomosc do serwera");
-
 					os.println(fileName);
 					os.println(pathout + fileEnd);
 System.out.println("Przed pobraniem pliku od klienta");
@@ -107,7 +102,6 @@ System.out.println("Przed pobraniem pliku od klienta");
 
 		// byte[] theByte = new byte[1];
 		byte[] byteArray = new byte[1024];
-		ByteArrayOutputStream arrayOutput = new ByteArrayOutputStream();
 
 		if (inputStreamData != null) {
 
@@ -119,21 +113,18 @@ System.out.println("Przed pobraniem pliku od klienta");
 				bufferedOutput = new BufferedOutputStream(fileOutput);
 				System.out.println("buffer: "+bufferedOutput);
 
-				int processedByte = inputStreamData.read(byteArray, 0,
-						byteArray.length);
-				System.out.println("processedByte: "+processedByte);
-
-				do {
-					arrayOutput.write(byteArray);
-					processedByte = inputStreamData.read(byteArray);
-				} while (processedByte != -1);
-
-				bufferedOutput.write(arrayOutput.toByteArray());
+				int bytesRead;
+				 while ((bytesRead = inputStreamData.read(byteArray)) != -1) {
+					 bufferedOutput.write(byteArray, 0, bytesRead);
+					 System.out.println("odbieram od serwera dane");
+			        }
+				
 				bufferedOutput.flush();
 				System.out.println("Przed zamknieciem strumienia buffer out put");
 				bufferedOutput.close();
 				System.out.println("file downloaded");
-
+				inputStreamData.close();
+				System.out.println("Zamykam strumien wejsciowy");
 			} catch (IOException ex) {
 				System.out.println("file transfer error." + ex);
 			}

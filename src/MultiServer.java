@@ -1,5 +1,6 @@
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -89,12 +90,9 @@ public class MultiServer {
  */
 class ClientThread extends Thread {
 
-	private static final char[] title = null;
 	private DataInputStream is = null;
 	private PrintStream os = null;
 
-	private ObjectInputStream objInStr = null;
-	private ObjectOutputStream objOutStr = null;
 	private Socket clientSocket = null;
 	private final ClientThread[] threads;
 	private int maxClientsCount;
@@ -117,22 +115,21 @@ class ClientThread extends Thread {
 			/* Create input and output streams for this client. */
 			is = new DataInputStream(clientSocket.getInputStream());
 			os = new PrintStream(clientSocket.getOutputStream());
+			OutputStream ost = new DataOutputStream(os);
 			os.println("Dostepne pliki:");
 			for (int i = 0; i < titles.length; i++) {
 				os.println(titles[i]);
 			}
 			os.println("Podaj plik i sciezke wyjsciowa.");
 			while (true) {
-
+				System.out.println("Czytam od klienta co chce pobrac: ");
 				String title = is.readLine().trim();
-				System.out.println(title);
 				String path = is.readLine().trim();
-				// dzialam az ktos nie poda /quit
+				// I am working until /quit
 				if (title.startsWith("/quit") || path.startsWith("/guit")) {
 					break;
 				}
-				OutputStream ost = clientSocket.getOutputStream();
-				System.out.println("Przed wyslaniem pliku do klienta");
+				System.out.println("Przed wyslaniem pliku do klienta o nazwie:  " + title+"    \noraz o ciezce docelowej:  " + path);
 				send(ost, title);
 				System.out.println("Wyslano poprwnie plik " + title
 						+ ", obraz znajduje sie " + path);
@@ -141,7 +138,7 @@ class ClientThread extends Thread {
 			// jesli wyszedlem z petli to znaczy ze skonczylem, wysylam ta
 			// inforamcje
 
-			os.println("#*** Bye ***");
+			os.println("*** Bye ***");
 
 			/*
 			 * Clean up. Set the current thread variable to null so that a new
@@ -161,7 +158,7 @@ class ClientThread extends Thread {
 		}
 	}
 
-	public void send(OutputStream os, String name) throws IOException {
+	public void send(OutputStream ost, String name) throws IOException {
 		// sendfile
 		String pathFile = "D:\\eclipse\\semestr4\\MulticlientServer\\" + name;
 		File myFile = new File(pathFile);
@@ -170,11 +167,20 @@ class ClientThread extends Thread {
 		FileInputStream fis = new FileInputStream(myFile);
 		System.out.println("po");
 		BufferedInputStream bis = new BufferedInputStream(fis);
-		bis.read(mybytearray, 0, mybytearray.length);
-		System.out.println("Sending...");
-		os.write(mybytearray, 0, mybytearray.length);
-		os.flush();
-		os.close();//musze to zamnknac bbo inczaczej nie ma danych w nowym pliku s
+		
+		int bytesRead;
+		while((bytesRead=bis.read(mybytearray))!=-1)
+		{
+		    ost.write(mybytearray,0,bytesRead);
+		    System.out.println("Sending...");
+		}
+		
+//		bis.read(mybytearray, 0, mybytearray.length);
+//		System.out.println("Sending...");
+//		os.write(mybytearray, 0, mybytearray.length);
+		ost.flush();
+		System.out.println("Wyslano, jestem po flush");
+		//os.close();//musze to zamnknac bbo inczaczej nie ma danych w nowym pliku s
 	}
 
 	private void posprzatajPolaczenie() {

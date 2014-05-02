@@ -1,4 +1,5 @@
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -6,6 +7,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -90,9 +93,10 @@ public class MultiServer {
  */
 class ClientThread extends Thread {
 
-	private DataInputStream is = null;
+	private InputStreamReader is = null;
+	private BufferedReader buferReader = null;
 	private PrintStream os = null;
-
+	
 	private Socket clientSocket = null;
 	private final ClientThread[] threads;
 	private int maxClientsCount;
@@ -113,9 +117,10 @@ class ClientThread extends Thread {
 
 		try {
 			/* Create input and output streams for this client. */
-			is = new DataInputStream(clientSocket.getInputStream());
+			is = new InputStreamReader(clientSocket.getInputStream());
+			buferReader = new BufferedReader(is);
 			os = new PrintStream(clientSocket.getOutputStream());
-			OutputStream ost = new DataOutputStream(os);
+		
 			os.println("Dostepne pliki:");
 			for (int i = 0; i < titles.length; i++) {
 				os.println(titles[i]);
@@ -123,21 +128,22 @@ class ClientThread extends Thread {
 			os.println("Podaj plik i sciezke wyjsciowa.");
 			while (true) {
 				System.out.println("Czytam od klienta co chce pobrac: ");
-				String title = is.readLine().trim();
-				String path = is.readLine().trim();
+				String title = buferReader.readLine().trim();
+				String path = buferReader.readLine().trim();
 				// I am working until /quit
 				if (title.startsWith("/quit") || path.startsWith("/guit")) {
 					break;
 				}
 				System.out.println("Przed wyslaniem pliku do klienta o nazwie:  " + title+"    \noraz o ciezce docelowej:  " + path);
-				send(ost, title);
+				send( title);
 				System.out.println("Wyslano poprwnie plik " + title
 						+ ", obraz znajduje sie " + path);
+			
 
 			}
 			// jesli wyszedlem z petli to znaczy ze skonczylem, wysylam ta
 			// inforamcje
-
+			posprzatajPolaczenie();
 			os.println("*** Bye ***");
 
 			/*
@@ -158,27 +164,23 @@ class ClientThread extends Thread {
 		}
 	}
 
-	public void send(OutputStream ost, String name) throws IOException {
-		// sendfile
+	public void send( String name) throws IOException {
 		String pathFile = "D:\\eclipse\\semestr4\\MulticlientServer\\" + name;
 		File myFile = new File(pathFile);
-		byte[] mybytearray = new byte[(int) myFile.length()];
+		byte[] arrayByte = new byte[(int) myFile.length()];
 		System.out.println("przed");
-		FileInputStream fis = new FileInputStream(myFile);
+		FileInputStream fileInputStr = new FileInputStream(myFile);
 		System.out.println("po");
-		BufferedInputStream bis = new BufferedInputStream(fis);
+		BufferedInputStream bufInStr = new BufferedInputStream(fileInputStr );
 		
-		int bytesRead;
-		while((bytesRead=bis.read(mybytearray))!=-1)
-		{
-		    ost.write(mybytearray,0,bytesRead);
-		    System.out.println("Sending...");
-		}
+		DataInputStream dataInStr = new DataInputStream (bufInStr);
+		dataInStr.readFully(arrayByte, 0, arrayByte.length);
 		
-//		bis.read(mybytearray, 0, mybytearray.length);
-//		System.out.println("Sending...");
-//		os.write(mybytearray, 0, mybytearray.length);
-		ost.flush();
+		//sending  file size to the socket
+		DataOutputStream dataOutStr = new DataOutputStream(clientSocket.getOutputStream());
+		dataOutStr.writeLong(arrayByte.length);
+		dataOutStr.write(arrayByte, 0, arrayByte.length);
+		dataOutStr.flush();
 		System.out.println("Wyslano, jestem po flush");
 		//os.close();//musze to zamnknac bbo inczaczej nie ma danych w nowym pliku s
 	}

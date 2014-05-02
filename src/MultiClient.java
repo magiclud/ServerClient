@@ -80,7 +80,7 @@ public class MultiClient implements Runnable {
 					os.println(fileName);
 					os.println(pathout + fileEnd);
 System.out.println("Przed pobraniem pliku od klienta");
-					new MultiClient().receiveFile(fileEnd);
+					new MultiClient().receiveFile( fileEnd);
 				
 					System.out.println("Po pobraniu pliku od klienta");
 			//	}
@@ -98,37 +98,49 @@ System.out.println("Przed pobraniem pliku od klienta");
 		}
 	}
 
-	private void receiveFile(String path) throws IOException {
+	private void receiveFile( String endPath) throws IOException {
 
 		// byte[] theByte = new byte[1];
-		byte[] byteArray = new byte[1024];
-
-		if (inputStreamData != null) {
-
-			FileOutputStream fileOutput = null;
-			BufferedOutputStream bufferedOutput = null;
-			try {
-				System.out.println("downloading target file..."  + path);
-				fileOutput = new FileOutputStream( path);
-				bufferedOutput = new BufferedOutputStream(fileOutput);
-				System.out.println("buffer: "+bufferedOutput);
-
-				int bytesRead;
-				 while ((bytesRead = inputStreamData.read(byteArray)) != -1) {
-					 bufferedOutput.write(byteArray, 0, bytesRead);
-					 System.out.println("odbieram od serwera dane");
-			        }
-				
-				bufferedOutput.flush();
-				System.out.println("Przed zamknieciem strumienia buffer out put");
-				bufferedOutput.close();
-				System.out.println("file downloaded");
-				inputStreamData.close();
-				System.out.println("Zamykam strumien wejsciowy");
-			} catch (IOException ex) {
-				System.out.println("file transfer error." + ex);
-			}
+//		byte[] byteArray = new byte[1024];
+//
+//		if (inputStreamData != null) {
+//
+//			FileOutputStream fileOutput = null;
+//			BufferedOutputStream bufferedOutput = null;
+//			try {
+//				System.out.println("downloading target file..."  + path);
+//				fileOutput = new FileOutputStream( path);
+//				bufferedOutput = new BufferedOutputStream(fileOutput);
+//				System.out.println("buffer: "+bufferedOutput);
+//
+//				int bytesRead;
+//				 while ((bytesRead = inputStreamData.read(byteArray)) != -1) {
+//					 bufferedOutput.write(byteArray, 0, bytesRead);
+//					 System.out.println("odbieram od serwera dane");
+//			        }
+//				
+//				bufferedOutput.flush();
+//				System.out.println("Przed zamknieciem strumienia buffer out put");
+//				bufferedOutput.close();
+//				System.out.println("file downloaded");
+//				inputStreamData.close();
+//				System.out.println("Zamykam strumien wejsciowy");
+//			} catch (IOException ex) {
+//				System.out.println("file transfer error." + ex);
+//			}
+//		}
+		
+		int bytesRead;
+		OutputStream fileOutput = new FileOutputStream(endPath);
+		long size = inputStreamData.readLong();
+		byte[] bufferByte = new byte[1024];
+		while(size>0 &&(bytesRead = inputStreamData.read(bufferByte,0, (int )Math.min(bufferByte.length, size)))!=-1){
+			fileOutput.write(bufferByte,0,bytesRead);
+			size -= bytesRead;
 		}
+		fileOutput.close();
+		inputStreamData.close();
+		System.out.println("Plik zosatal zapisany do: " + endPath);
 
 	}
 

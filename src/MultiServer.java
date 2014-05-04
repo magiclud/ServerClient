@@ -30,7 +30,7 @@ public class MultiServer {
 	// maksymalna liczba klientow
 	private static final int maxClientsCount = 3;
 	// tablica z watkami wszystkich klientow
-	private static final ClientThread[] threads = new ClientThread[maxClientsCount];
+	private static final ClientThreads[] threads = new ClientThreads[maxClientsCount];
 
 	private static String[] titles = { "test.txt", "test1.txt", "test2.txt" };
 
@@ -63,7 +63,7 @@ public class MultiServer {
 					if (threads[i] == null) {
 						// wyszukuje pierwszego wolnego miejsca w tablicy i
 						// tworze watek klienta
-						(threads[i] = new ClientThread(clientSocket, threads,
+						(threads[i] = new ClientThreads(clientSocket, threads,
 								i, titles)).start();
 						break;
 					}
@@ -91,19 +91,19 @@ public class MultiServer {
  * Klasa reprezentujaca watek klienta
  * 
  */
-class ClientThread extends Thread {
+class ClientThreads extends Thread {
 
 	private InputStreamReader is = null;
 	private BufferedReader buferReader = null;
 	private PrintStream os = null;
 	
 	private Socket clientSocket = null;
-	private final ClientThread[] threads;
+	private final ClientThreads[] threads;
 	private int maxClientsCount;
 	private int klientNr;
 	private String[] titles;
 
-	public ClientThread(Socket clientSocket, ClientThread[] threads,
+	public ClientThreads(Socket clientSocket, ClientThreads[] threads,
 			int klientNr, String[] titles) throws IOException {
 		this.clientSocket = clientSocket;
 		this.threads = threads;
